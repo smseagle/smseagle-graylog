@@ -15,6 +15,9 @@ and can be configured in your `graylog.conf` file.
 
 Restart `graylog-server` and you are done.
 
+
+Detailed setup instructions can be found at [SMSEagle Graylog SMS integration] page (https://www.smseagle.eu/integration-plugins/graylog-sms-integration/)
+
 ## Build
 
 This project is using Maven 3 and requires Java 8 or higher.
