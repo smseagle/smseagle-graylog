@@ -8,7 +8,7 @@ Alert/notification callback plugin for integrating the [SMSEagle ](https://www.s
 
 ## Installation
 
-[Download the plugin](https://github.com/proximus-software/graylog-plugin-smseagle/releases)
+[Download the plugin](https://bitbucket.org/proximus/smseagle-graylog/downloads/)
 and place the `.jar` file in your Graylog plugin directory. The plugin directory
 is the `plugins/` folder relative from your `graylog-server` directory by default
 and can be configured in your `graylog.conf` file.
