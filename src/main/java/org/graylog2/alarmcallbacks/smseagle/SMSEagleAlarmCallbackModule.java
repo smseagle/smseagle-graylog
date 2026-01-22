@@ -23,6 +23,10 @@ import org.graylog2.plugin.PluginModule;
 public class SMSEagleAlarmCallbackModule extends PluginModule {
     @Override
     protected void configure() {
-        addAlarmCallback(SMSEagleAlarmCallback.class);
+        installNotification(
+                SMSEagleNotification.class,
+                SMSEagleNotification.Factory.class,
+                SMSEagleNotification.Descriptor.class
+        );
     }
 }
