@@ -16,13 +16,13 @@
  * You should have received a copy of the GNU General Public License
  * along with Graylog.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.graylog2.alarmcallbacks.smseagle;
+package org.graylog2.Notifications.smseagle;
 
 import org.graylog2.plugin.PluginModule;
 
-public class SMSEagleAlarmCallbackModule extends PluginModule {
+public class SMSEagleNotificationModule extends PluginModule {
     @Override
     protected void configure() {
-        addAlarmCallback(SMSEagleAlarmCallback.class);
+        addNotification(SMSEagleNotification.class);
     }
 }

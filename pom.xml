@@ -10,7 +10,7 @@
     <packaging>jar</packaging>
 
     <name>graylog-plugin-smseagle</name>
-    <description>Graylog SMSEagle Alarmcallback plugin</description>
+    <description>Graylog SMSEagle Notification plugin</description>
     <url>https://www.graylog.org</url>
 
     <licenses>

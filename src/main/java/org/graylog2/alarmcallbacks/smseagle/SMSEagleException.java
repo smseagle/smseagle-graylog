@@ -1,7 +1,7 @@
 /**
  * 
  */
-package org.graylog2.alarmcallbacks.smseagle;
+package org.graylog2.Notifications.smseagle;
 
 /**
  * @author mdelarosa

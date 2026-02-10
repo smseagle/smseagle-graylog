@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with Graylog.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.graylog2.alarmcallbacks.smseagle;
+package org.graylog2.Notifications.smseagle;
 
 import org.graylog2.plugin.PluginMetaData;
 import org.graylog2.plugin.ServerStatus;
@@ -26,15 +26,15 @@ import java.net.URI;
 import java.util.Collections;
 import java.util.Set;
 
-public class SMSEagleAlarmCallbackMetadata implements PluginMetaData {
+public class SMSEagleNotificationMetadata implements PluginMetaData {
     @Override
     public String getUniqueId() {
-        return SMSEagleAlarmCallback.class.getCanonicalName();
+        return SMSEagleNotification.class.getCanonicalName();
     }
 
     @Override
     public String getName() {
-        return "SMSEagle Alarmcallback Plugin";
+        return "SMSEagle Notification Plugin";
     }
 
     @Override
@@ -49,12 +49,12 @@ public class SMSEagleAlarmCallbackMetadata implements PluginMetaData {
 
     @Override
     public Version getVersion() {
-        return new Version(1, 0, 1);
+        return new Version(2, 0, 2);
     }
 
     @Override
     public String getDescription() {
-        return "Alarm callback plugin that sends all stream alerts as SMS to a defined phone number.";
+        return "Notification plugin that sends all stream alerts to a defined phone number.";
     }
 
     @Override
