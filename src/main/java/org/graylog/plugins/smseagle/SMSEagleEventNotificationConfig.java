@@ -1,131 +1,147 @@
 package org.graylog.plugins.smseagle;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonTypeName;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.google.auto.value.AutoValue;
+import org.graylog.events.contentpack.entities.EventNotificationConfigEntity;
+import org.graylog.events.event.EventDto;
 import org.graylog.events.notifications.EventNotificationConfig;
-import org.graylog2.plugin.configuration.Configuration;
-import org.graylog2.plugin.configuration.ConfigurationRequest;
-import org.graylog2.plugin.configuration.fields.ConfigurationField;
-import org.graylog2.plugin.configuration.fields.DropdownField;
-import org.graylog2.plugin.configuration.fields.NumberField;
-import org.graylog2.plugin.configuration.fields.TextField;
+import org.graylog.events.notifications.EventNotificationExecutionJob;
+import org.graylog.scheduler.JobTriggerData;
+import org.graylog2.contentpacks.EntityDescriptorIds;
+import org.graylog2.plugin.rest.ValidationResult;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
+import javax.annotation.Nullable;
 
-public class SMSEagleEventNotificationConfig implements EventNotificationConfig {
+@AutoValue
+@JsonTypeName(SMSEagleEventNotificationConfig.TYPE_NAME)
+@JsonDeserialize(builder = SMSEagleEventNotificationConfig.Builder.class)
+public abstract class SMSEagleEventNotificationConfig implements EventNotificationConfig {
     public static final String TYPE_NAME = "smseagle-notification-v2";
 
-    public static final String CK_URL = "smseagle_url";
-    public static final String CK_AUTH_TOKEN = "auth_token";
-    public static final String CK_TO_NUMBER = "to_number";
-    public static final String CK_TO_CONTACT = "to_contact";
-    public static final String CK_TO_GROUP = "to_group";
-    public static final String CK_DATA_TYPE = "smseagle_type";
-    public static final String CK_RING_DURATION = "ring_duration";
-    public static final String CK_TTS_MODEL_ID = "tts_model";
-    public static final String CK_ELEVENLABS_DIRECT_API_KEY = "elevenlabs_api_key";
+    private static final String FIELD_URL = "smseagle_url";
+    private static final String FIELD_AUTH_TOKEN = "auth_token";
+    private static final String FIELD_TO_NUMBER = "to_number";
+    private static final String FIELD_TO_CONTACT = "to_contact";
+    private static final String FIELD_TO_GROUP = "to_group";
+    private static final String FIELD_DATA_TYPE = "smseagle_type";
+    private static final String FIELD_RING_DURATION = "ring_duration";
+    private static final String FIELD_TTS_MODEL_ID = "tts_model";
+    private static final String FIELD_ELEVENLABS_API_KEY = "elevenlabs_api_key";
 
-    private static final List<String> SENSITIVE_CONFIGURATION_KEYS = ImmutableList.of(CK_AUTH_TOKEN);
+    @JsonProperty(FIELD_URL)
+    public abstract String smseagleUrl();
 
-    private final String id;
-    private final Configuration configuration;
+    @JsonProperty(FIELD_AUTH_TOKEN)
+    public abstract String authToken();
 
-    public SMSEagleEventNotificationConfig(String id, Configuration configuration) {
-        this.id = id;
-        this.configuration = configuration;
+    @JsonProperty(FIELD_TO_NUMBER)
+    @Nullable
+    public abstract String toNumber();
+
+    @JsonProperty(FIELD_TO_CONTACT)
+    @Nullable
+    public abstract String toContact();
+
+    @JsonProperty(FIELD_TO_GROUP)
+    @Nullable
+    public abstract String toGroup();
+
+    @JsonProperty(FIELD_DATA_TYPE)
+    public abstract String smseagleType();
+
+    @JsonProperty(FIELD_RING_DURATION)
+    public abstract int ringDuration();
+
+    @JsonProperty(FIELD_TTS_MODEL_ID)
+    public abstract int ttsModel();
+
+    @JsonProperty(FIELD_ELEVENLABS_API_KEY)
+    @Nullable
+    public abstract String elevenlabsApiKey();
+
+    @Override
+    @JsonIgnore
+    public JobTriggerData toJobTriggerData(EventDto dto) {
+        return EventNotificationExecutionJob.Data.builder().eventDto(dto).build();
+    }
+
+    public static Builder builder() {
+        return Builder.create();
     }
 
     @Override
-    public String id() {
-        return id;
+    @JsonIgnore
+    public ValidationResult validate() {
+        final ValidationResult validation = new ValidationResult();
+
+        if (smseagleUrl() == null || smseagleUrl().isEmpty()) {
+            validation.addError(FIELD_URL, "SMSEagle URL cannot be empty.");
+        }
+        if (authToken() == null || authToken().isEmpty()) {
+            validation.addError(FIELD_AUTH_TOKEN, "Access token cannot be empty.");
+        }
+
+        boolean hasRecipient = (toNumber() != null && !toNumber().isEmpty())
+                || (toContact() != null && !toContact().isEmpty())
+                || (toGroup() != null && !toGroup().isEmpty());
+        if (!hasRecipient) {
+            validation.addError(FIELD_TO_NUMBER, "At least one recipient (number, contact, or group) must be specified.");
+        }
+
+        return validation;
     }
 
     @Override
-    public String type() {
-        return TYPE_NAME;
+    public EventNotificationConfigEntity toContentPackEntity(EntityDescriptorIds entityDescriptorIds) {
+        return null;
     }
 
-    public Configuration configuration() {
-        return configuration;
-    }
+    @AutoValue.Builder
+    public abstract static class Builder implements EventNotificationConfig.Builder<Builder> {
+        @JsonCreator
+        public static Builder create() {
+            return new AutoValue_SMSEagleEventNotificationConfig.Builder()
+                    .type(TYPE_NAME)
+                    .smseagleType("SMS")
+                    .ringDuration(10)
+                    .ttsModel(0)
+                    .toNumber("")
+                    .toContact("")
+                    .toGroup("")
+                    .elevenlabsApiKey("");
+        }
 
-    @Override
-    public ConfigurationRequest getRequestedConfiguration() {
-        final ConfigurationRequest cr = new ConfigurationRequest();
+        @JsonProperty(FIELD_URL)
+        public abstract Builder smseagleUrl(String smseagleUrl);
 
-        cr.addField(new TextField(CK_URL, "URL SMSEagle", "",
-                "URL urządzenia SMSEagle",
-                ConfigurationField.Optional.NOT_OPTIONAL));
-        cr.addField(new TextField(CK_AUTH_TOKEN, "Access Token", "",
-                "Token dostępu SMSEagle",
-                ConfigurationField.Optional.NOT_OPTIONAL));
-        cr.addField(new TextField(CK_TO_NUMBER, "Numer telefonu odbiorcy", "",
-                "Numery rozdzielone przecinkami",
-                ConfigurationField.Optional.OPTIONAL));
-        cr.addField(new TextField(CK_TO_CONTACT, "Contact ID odbiorcy", "",
-                "ID kontaktów rozdzielone przecinkami",
-                ConfigurationField.Optional.OPTIONAL));
-        cr.addField(new TextField(CK_TO_GROUP, "Group ID", "",
-                "ID grup rozdzielone przecinkami",
-                ConfigurationField.Optional.OPTIONAL));
+        @JsonProperty(FIELD_AUTH_TOKEN)
+        public abstract Builder authToken(String authToken);
 
-        cr.addField(new DropdownField(
-                CK_DATA_TYPE,
-                "Typ",
-                "SMS",
-                (Map<String, String>) ImmutableMap.<String, String>builder()
-                        .put("SMS", "SMS")
-                        .put("FLASHSMS", "Flash SMS")
-                        .put("MULTICHANNEL", "Ring + SMS")
-                        .put("SIGNAL", "Signal")
-                        .put("WHATSAPP", "WhatsApp")
-                        .put("RING", "Ring call")
-                        .put("TTS", "Text-to-Speech")
-                        .put("TTS_ADV", "Text-to-Speech (Advanced)")
-                        .put("ELEVENLABS", "ElevenLabs (local)")
-                        .put("ELEVENLABS_DIRECT", "ElevenLabs (direct call)")
-                        .build(),
-                "Co ma zostać wysłane.",
-                ConfigurationField.Optional.NOT_OPTIONAL
-        ));
+        @JsonProperty(FIELD_TO_NUMBER)
+        public abstract Builder toNumber(String toNumber);
 
-        cr.addField(new NumberField(CK_RING_DURATION, "Czas dzwonienia (s)", 10,
-                "Czas połączenia w sekundach.",
-                ConfigurationField.Optional.OPTIONAL));
-        cr.addField(new NumberField(CK_TTS_MODEL_ID, "TTS model ID", 0,
-                "ID modelu TTS dla TTS_ADV/ELEVENLABS.",
-                ConfigurationField.Optional.OPTIONAL));
-        cr.addField(new TextField(CK_ELEVENLABS_DIRECT_API_KEY, "ElevenLabs API key", "",
-                "Wymagane dla ELEVENLABS_DIRECT.",
-                ConfigurationField.Optional.OPTIONAL));
+        @JsonProperty(FIELD_TO_CONTACT)
+        public abstract Builder toContact(String toContact);
 
-        return cr;
-    }
+        @JsonProperty(FIELD_TO_GROUP)
+        public abstract Builder toGroup(String toGroup);
 
-    
-    @Override
-    public EventNotificationConfigResponse toResponse() {
-        return EventNotificationConfigResponse.builder()
-            .type(TYPE_NAME)
-            .url(CK_URL)
-            .build();
-    }
+        @JsonProperty(FIELD_DATA_TYPE)
+        public abstract Builder smseagleType(String smseagleType);
 
-    @Override
-    public Map<String, Object> toPersisted() {
-        return (Map<String, Object>) (Map) configuration.getSource();
-    }
+        @JsonProperty(FIELD_RING_DURATION)
+        public abstract Builder ringDuration(int ringDuration);
 
-    @Override
-    public List<String> maskedFields() {
-        return SENSITIVE_CONFIGURATION_KEYS;
-    }
+        @JsonProperty(FIELD_TTS_MODEL_ID)
+        public abstract Builder ttsModel(int ttsModel);
 
-    @Override
-    public boolean isV2() {
-        return true;
+        @JsonProperty(FIELD_ELEVENLABS_API_KEY)
+        public abstract Builder elevenlabsApiKey(String elevenlabsApiKey);
+
+        public abstract SMSEagleEventNotificationConfig build();
     }
 }

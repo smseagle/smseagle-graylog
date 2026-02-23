@@ -2,9 +2,11 @@ package org.graylog.plugins.smseagle;
 
 import static java.lang.Math.min;
 
+import jakarta.inject.Inject;
 import org.graylog.events.notifications.EventNotification;
 import org.graylog.events.notifications.EventNotificationContext;
-import org.graylog2.plugin.configuration.Configuration;
+import org.graylog.events.notifications.EventNotificationConfig;
+import org.graylog.events.notifications.PermanentEventNotificationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,41 +14,47 @@ public class SMSEagleEventNotification implements EventNotification {
     private static final Logger LOG = LoggerFactory.getLogger(SMSEagleEventNotification.class);
     private static final int MAX_MSG_LENGTH = 140;
 
-    private final SMSEagleEventNotificationConfig config;
+    public interface Factory extends EventNotification.Factory<SMSEagleEventNotification> {
+        @Override
+        SMSEagleEventNotification create();
+    }
 
-    public SMSEagleEventNotification(SMSEagleEventNotificationConfig config) {
-        this.config = config;
+    @Inject
+    public SMSEagleEventNotification() {
     }
 
     @Override
-    public void execute(EventNotificationContext ctx) throws Exception {
-        final Configuration c = config.configuration();
+    public void execute(EventNotificationContext ctx) throws PermanentEventNotificationException {
+        final EventNotificationConfig notificationConfig = ctx.notificationConfig();
+        if (!(notificationConfig instanceof SMSEagleEventNotificationConfig)) {
+            throw new PermanentEventNotificationException("Unknown notification config type: " + notificationConfig.getClass());
+        }
+
+        final SMSEagleEventNotificationConfig config = (SMSEagleEventNotificationConfig) notificationConfig;
 
         final SMSEagleClient client = new SMSEagleClient(
-                c.getString(SMSEagleEventNotificationConfig.CK_URL),
-                c.getString(SMSEagleEventNotificationConfig.CK_AUTH_TOKEN)
+                config.smseagleUrl(),
+                config.authToken()
         );
 
         try {
             client.contact(
-                    c.getString(SMSEagleEventNotificationConfig.CK_TO_NUMBER),
-                    c.getString(SMSEagleEventNotificationConfig.CK_TO_CONTACT),
-                    c.getString(SMSEagleEventNotificationConfig.CK_TO_GROUP),
+                    config.toNumber(),
+                    config.toContact(),
+                    config.toGroup(),
                     buildMessage(ctx),
-                    c.getString(SMSEagleEventNotificationConfig.CK_DATA_TYPE),
-                    c.getInt(SMSEagleEventNotificationConfig.CK_RING_DURATION),
-                    c.getInt(SMSEagleEventNotificationConfig.CK_TTS_MODEL_ID),
-                    c.getString(SMSEagleEventNotificationConfig.CK_ELEVENLABS_DIRECT_API_KEY)
+                    config.smseagleType(),
+                    config.ringDuration(),
+                    config.ttsModel(),
+                    config.elevenlabsApiKey()
             );
         } catch (SMSEagleException e) {
-            LOG.error("Nie udało się wysłać powiadomienia SMSEagle", e);
-            throw e;
+            LOG.error("Could not send SMSEagle notification", e);
+            throw new PermanentEventNotificationException("Could not send SMSEagle notification: " + e.getMessage(), e);
         }
     }
 
     private String buildMessage(EventNotificationContext ctx) {
-        // W Event Notifications zamiast AlertCondition.CheckResult masz dane eventu w ctx.
-        // Najczęściej da się wyciągnąć tytuł/wiadomość/event definition; poniżej „bezpieczny fallback”.
         String msg = "[Graylog] Event notification";
 
         try {
@@ -54,7 +62,7 @@ public class SMSEagleEventNotification implements EventNotification {
                 msg = "[Graylog] " + ctx.event().message();
             }
         } catch (Exception ignored) {
-            // fallback zostaje
+            LOG.error("Couldn't build an SMSEagle notification message", e);
         }
 
         return msg.substring(0, min(msg.length(), MAX_MSG_LENGTH));

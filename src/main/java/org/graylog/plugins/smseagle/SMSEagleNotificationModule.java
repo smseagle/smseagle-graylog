@@ -23,9 +23,11 @@ import org.graylog2.plugin.PluginModule;
 public class SMSEagleNotificationModule extends PluginModule {
     @Override
     protected void configure() {
-        addEventNotificationType(
+        addNotificationType(
+                SMSEagleEventNotificationConfig.TYPE_NAME,
                 SMSEagleEventNotificationConfig.class,
-                SMSEagleEventNotificationFactory.class
+                SMSEagleEventNotification.class,
+                SMSEagleEventNotification.Factory.class
         );
     }
 }
