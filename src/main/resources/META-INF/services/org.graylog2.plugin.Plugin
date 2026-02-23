@@ -1,1 +1,1 @@
-org.graylog2.Notifications.smseagle.SMSEagleNotificationPlugin
+org.graylog.plugins.smseagle.SMSEagleNotificationPlugin

@@ -1,18 +1,12 @@
-package org.graylog2.Notifications.smseagle;
+package org.graylog.plugins.smseagle;
 
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
-import java.sql.Connection;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
-import com.google.gson.JsonObject;
-
-import edu.emory.mathcs.backport.java.util.Arrays;
 import net.minidev.json.JSONObject;
 import net.minidev.json.parser.JSONParser;
 
@@ -33,111 +27,137 @@ public class SMSEagleClient {
 	}
 
 	/**
-	 * Method for sending a SMS using SMSEagle api v2
+	 * Method for sending a message using SMSEagle APIv2
 	 * 
 	 * @throws SMSEagleException
 	 */
-	@SuppressWarnings("null")
-	public void contact(String to, String contacts, String groups, String message, String contactType, int ringDuration,
-			int voiceId, String elevenLabsAPIKey) throws SMSEagleException {
+	public void contact(
+	    String to,
+	    String contacts,
+	    String groups,
+	    String message,
+	    String contactType,
+	    int ringDuration,
+		int voiceId,
+		String elevenLabsAPIKey
+    ) throws SMSEagleException {
 		ArrayList<String> tempToList = new ArrayList<>();
-		for (String i : to.split("[\\.\\s,;]")) {
-			tempToList.add(i);
+		if (to != null && !to.trim().isEmpty()) {
+			for (String i : to.split("[\\.\\s,;]")) {
+				if (!i.trim().isEmpty()) {
+					tempToList.add(i.trim());
+				}
+			}
 		}
-		String[] toStrArr = (String[]) tempToList.toArray();
+		String[] toStrArr = tempToList.toArray(new String[0]);
 
 		ArrayList<Integer> tempContactList = new ArrayList<>();
-		for (String i : contacts.split("[\\.\\s,;]")) {
-			tempContactList.add(Integer.parseInt(i));
+		if (contacts != null && !contacts.trim().isEmpty()) {
+			for (String i : contacts.split("[\\.\\s,;]")) {
+				if (!i.trim().isEmpty()) {
+					tempContactList.add(Integer.parseInt(i.trim()));
+				}
+			}
 		}
-		Integer[] contactsIntArr = (Integer[]) tempContactList.toArray();
+		Integer[] contactsIntArr = tempContactList.toArray(new Integer[0]);
 
 		ArrayList<Integer> tempGroupList = new ArrayList<>();
-		for (String i : groups.split("[\\.\\s,;]")) {
-			tempGroupList.add(Integer.parseInt(i));
+		if (groups != null && !groups.trim().isEmpty()) {
+			for (String i : groups.split("[\\.\\s,;]")) {
+				if (!i.trim().isEmpty()) {
+					tempGroupList.add(Integer.parseInt(i.trim()));
+				}
+			}
 		}
-		Integer[] groupsIntArr = (Integer[]) tempGroupList.toArray();
+		Integer[] groupsIntArr = tempGroupList.toArray(new Integer[0]);
 
 		HttpURLConnection connection = null;
 		OutputStreamWriter writer = null;
+		
 		JSONObject parameters = new JSONObject();
 		parameters.put("to", toStrArr);
 		parameters.put("contacts", contactsIntArr);
 		parameters.put("groups", groupsIntArr);
-		parameters.put("text", message);
+		
 		String sendSMSUrl = this.url;
 		sendSMSUrl += sendSMSUrl.endsWith("/") ? "api/v2/" : "/api/v2/";
+		
 		try {
 
 			switch (contactType) {
 				case "SMS":
+                    sendSMSUrl += "messages/sms";
+                    parameters.put("text", message);
+                break;
+                
 				case "FLASHSMS":
-				case "MULTICHANNEL":
+                    sendSMSUrl += "messages/sms";
+                    parameters.put("text", message);
+                    parameters.put("flash", true);
+                break;
+                
 				case "RING":
-					sendSMSUrl += "messages/multichannel";
-					JSONObject sms = new JSONObject();
-					if (contactType != "RING") {
-						sms.put("flash", contactType == "FLASHSMS");
-						parameters.put("sms", sms);
-					}
-					if (!Pattern.matches(".*SMS", contactType)) {
-						parameters.put("ring", new JSONObject().put("duration", ringDuration));
-					}
-					break;
-
+                    sendSMSUrl += "calls/ring";
+					parameters.put("duration", ringDuration);
+                break;
 
 				case "SIGNAL":
 					sendSMSUrl += "messages/signal";
-					break;
-
+					parameters.put("text", message);
+                break;
 
 				case "WHATSAPP":
 					sendSMSUrl += "messages/whatsapp";
-					break;
-
+					parameters.put("text", message);
+                break;
 
 				case "TTS":
 					sendSMSUrl += "calls/tts";
+					parameters.put("text", message);
 					parameters.put("duration", ringDuration);
-					break;
-
+                break;
 
 				case "TTS_ADV":
 					sendSMSUrl += "calls/tts_advanced";
+					parameters.put("text", message);
 					parameters.put("duration", ringDuration);
 					parameters.put("voice_id", voiceId);
-					break;
-
+                break;
 
 				case "ELEVENLABS":
 					sendSMSUrl += "calls/elevenlabs";
+					parameters.put("text", message);
 					parameters.put("duration", ringDuration);
 					parameters.put("voice_id", voiceId);
-					break;
+                break;
 
-
-				case "ELEVENLABS_REMOTE":
+				case "ELEVENLABS_DIRECT":
 					sendSMSUrl += "calls/elevenlabs_direct";
+					parameters.put("text", message);
 					parameters.put("duration", ringDuration);
 					parameters.put("voice_id", voiceId);
 					parameters.put("api_key", elevenLabsAPIKey);
-				default:
-					break;
+                break;
 			}
-			connection = this.genCon(sendSMSUrl);
-			writer = new OutputStreamWriter(connection.getOutputStream());
+			
+			connection = this.createConnection(sendSMSUrl);
+			
+			writer = new OutputStreamWriter(connection.getOutputStream(), Charset.defaultCharset());
 			writer.write(parameters.toString());
 			writer.close();
 
 			Object response = new JSONParser(JSONParser.MODE_PERMISSIVE).parse(connection.getInputStream());
+			
 			String result = "";
+			
 			if (response != null && response instanceof JSONObject) {
 				result = ((JSONObject) response).getAsString("result");
 			} else {
-				throw new SMSEagleException( "Error parsing response for SMS API or it is null - " + response != null ? response.toString() : "response is null");
+				throw new SMSEagleException( "Error parsing response for API or it is null - " + response != null ? response.toString() : "response is null");
 			}
+			
 			if (!result.contains("OK"))
-				throw new SMSEagleException("Error in Send SMS method: " + result);
+				throw new SMSEagleException("Error in method: " + result);
 		} catch (Exception e) {
 			throw new SMSEagleException(e.getMessage(), e);
 		} finally {
@@ -146,7 +166,7 @@ public class SMSEagleClient {
 		}
 	}
 
-	private HttpURLConnection genCon(String gateURL) throws SMSEagleException {
+	private HttpURLConnection createConnection(String gateURL) throws SMSEagleException {
 		try {
 			URI serverURI = new URI(gateURL);
 			URL serverAddress = serverURI.toURL();

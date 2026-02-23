@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with Graylog.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.graylog2.Notifications.smseagle;
+package org.graylog.plugins.smseagle;
 
 import org.graylog2.plugin.PluginMetaData;
 import org.graylog2.plugin.ServerStatus;
@@ -29,7 +29,7 @@ import java.util.Set;
 public class SMSEagleNotificationMetadata implements PluginMetaData {
     @Override
     public String getUniqueId() {
-        return SMSEagleNotification.class.getCanonicalName();
+        return SMSEagleEventNotification.class.getCanonicalName();
     }
 
     @Override

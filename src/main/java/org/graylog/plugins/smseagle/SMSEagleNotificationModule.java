@@ -16,24 +16,16 @@
  * You should have received a copy of the GNU General Public License
  * along with Graylog.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.graylog2.Notifications.smseagle;
+package org.graylog.plugins.smseagle;
 
-import org.graylog2.Notifications.smseagle.SMSEagleNotificationMetadata;
-import org.graylog2.plugin.Plugin;
-import org.graylog2.plugin.PluginMetaData;
 import org.graylog2.plugin.PluginModule;
 
-import java.util.Collection;
-import java.util.Collections;
-
-public class SMSEagleNotificationPlugin implements Plugin {
+public class SMSEagleNotificationModule extends PluginModule {
     @Override
-    public Collection<PluginModule> modules() {
-        return Collections.<PluginModule>singleton(new SMSEagleNotificationModule());
-    }
-
-    @Override
-    public PluginMetaData metadata() {
-        return new SMSEagleNotificationMetadata();
+    protected void configure() {
+        addEventNotificationType(
+                SMSEagleEventNotificationConfig.class,
+                SMSEagleEventNotificationFactory.class
+        );
     }
 }
