@@ -146,18 +146,45 @@ public class SMSEagleClient {
 			writer.write(parameters.toString());
 			writer.close();
 
-			Object response = new JSONParser(JSONParser.MODE_PERMISSIVE).parse(connection.getInputStream());
-			
-			String result = "";
-			
-			if (response != null && response instanceof JSONObject) {
-				result = ((JSONObject) response).getAsString("result");
-			} else {
-				throw new SMSEagleException( "Error parsing response for API or it is null - " + response != null ? response.toString() : "response is null");
+			int responseCode = connection.getResponseCode();
+			java.io.InputStream responseStream = (responseCode >= 200 && responseCode < 300)
+					? connection.getInputStream()
+					: connection.getErrorStream();
+
+			if (responseStream == null) {
+				throw new SMSEagleException("SMSEagle API returned HTTP " + responseCode + " with no response body");
 			}
-			
-			if (!result.contains("OK"))
-				throw new SMSEagleException("Error in method: " + result);
+
+			Object response = new JSONParser(JSONParser.MODE_PERMISSIVE).parse(responseStream);
+
+			if (response == null) {
+				throw new SMSEagleException("Empty response from SMSEagle API");
+			}
+
+			String responseStr = response.toString();
+
+			if (response instanceof JSONObject) {
+				String result = ((JSONObject) response).getAsString("result");
+				if (result == null || !result.contains("OK")) {
+					throw new SMSEagleException(responseStr);
+				}
+			} else if (response instanceof net.minidev.json.JSONArray) {
+				boolean hasOk = false;
+				for (Object item : (net.minidev.json.JSONArray) response) {
+					if (item instanceof JSONObject) {
+						String msg = ((JSONObject) item).getAsString("message");
+						if ("OK".equals(msg)) {
+							hasOk = true;
+							break;
+						}
+					}
+				}
+				if (!hasOk) {
+					throw new SMSEagleException(responseStr);
+				}
+			} else {
+				throw new SMSEagleException(responseStr);
+			}
 		} catch (Exception e) {
 			throw new SMSEagleException(e.getMessage(), e);
 		} finally {

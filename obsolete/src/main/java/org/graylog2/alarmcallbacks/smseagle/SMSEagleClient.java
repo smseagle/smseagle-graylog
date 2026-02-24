@@ -69,7 +69,7 @@ public class SMSEagleClient {
 				throw new SMSEagleException("Error parsing response for SMS API or it is null - " + response.toString());
 			}
 			if ( !result.contains("OK") ) 
-				throw new SMSEagleException("Error in Send SMS method: " + result); 
+				throw new SMSEagleException(result); 
 		} catch (Exception e) {
 			throw new SMSEagleException(e.getMessage(), e);
 		} finally {

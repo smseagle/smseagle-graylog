@@ -61,7 +61,7 @@ public class SMSEagleEventNotification implements EventNotification {
             if (ctx.event() != null && ctx.event().message() != null) {
                 msg = "[Graylog] " + ctx.event().message();
             }
-        } catch (Exception ignored) {
+        } catch (Exception e) {
             LOG.error("Couldn't build an SMSEagle notification message", e);
         }
 
