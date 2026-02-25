@@ -1,3 +1,9 @@
 /target/
+dependency-reduced-pom.xml
 .classpath
 .project
+.idea
+node
+node_modules
+.mvn
+yarn.lock

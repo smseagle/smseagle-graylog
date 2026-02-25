@@ -49,17 +49,17 @@ public class SMSEagleAlarmCallbackMetadata implements PluginMetaData {
 
     @Override
     public Version getVersion() {
-        return new Version(1, 0, 1);
+        return new Version(2, 0, 0);
     }
 
     @Override
     public String getDescription() {
-        return "Alarm callback plugin that sends all stream alerts as SMS to a defined phone number.";
+        return "Notification plugin that sends events as SMS via SMSEagle.";
     }
 
     @Override
     public Version getRequiredVersion() {
-        return new Version(2, 0, 0);
+        return new Version(3, 1, 0);
     }
 
     @Override

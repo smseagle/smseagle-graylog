@@ -1,0 +1,12 @@
+{
+  "name": "graylog-plugin-smseagle",
+  "version": "2.1.0",
+  "description": "Graylog SMSEagle Notification Plugin",
+  "scripts": {
+    "build": "webpack --config webpack.config.js",
+    "generate:apidefs": "echo 'No API definitions to generate'"
+  },
+  "devDependencies": {
+    "graylog-web-plugin": "file:../graylog2-server/graylog2-web-interface/packages/graylog-web-plugin"
+  }
+}
