@@ -8,7 +8,7 @@ Notification plugin for integrating the [SMSEagle](https://www.smseagle.eu) into
 
 ## Installation
 
-[Download the plugin](https://bitbucket.org/proximus/smseagle-graylog/downloads/)
+[Download the plugin](https://github.com/smseagle/smseagle-graylog/releases/tag/2.1.0)
 and place the `.jar` file in your Graylog plugin directory. The plugin directory
 is the `plugin/` folder relative from your `graylog-server` directory by default
 and can be configured in your `graylog.conf` file.
