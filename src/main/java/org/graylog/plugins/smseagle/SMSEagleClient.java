@@ -38,7 +38,9 @@ public class SMSEagleClient {
 	    String message,
 	    String contactType,
 	    int ringDuration,
-		int voiceId,
+		int ttsVoiceId,
+		int elevenlabsVoiceId,
+		String elevenlabsDirectVoiceId,
 		String elevenLabsAPIKey
     ) throws SMSEagleException {
 		ArrayList<String> tempToList = new ArrayList<>();
@@ -121,21 +123,21 @@ public class SMSEagleClient {
 					sendSMSUrl += "calls/tts_advanced";
 					parameters.put("text", message);
 					parameters.put("duration", ringDuration);
-					parameters.put("voice_id", voiceId);
+					parameters.put("voice_id", ttsVoiceId);
                 break;
 
 				case "ELEVENLABS":
 					sendSMSUrl += "calls/elevenlabs";
 					parameters.put("text", message);
 					parameters.put("duration", ringDuration);
-					parameters.put("voice_id", voiceId);
+					parameters.put("voice_id", elevenlabsVoiceId);
                 break;
 
 				case "ELEVENLABS_DIRECT":
 					sendSMSUrl += "calls/elevenlabs_direct";
 					parameters.put("text", message);
 					parameters.put("duration", ringDuration);
-					parameters.put("voice_id", voiceId);
+					parameters.put("voice_id", elevenlabsDirectVoiceId);
 					parameters.put("api_key", elevenLabsAPIKey);
                 break;
 			}

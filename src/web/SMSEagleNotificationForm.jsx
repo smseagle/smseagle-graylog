@@ -8,7 +8,6 @@ import * as FormsUtils from 'util/FormsUtils';
 const DATA_TYPES = {
   SMS: 'SMS',
   FLASHSMS: 'Flash SMS',
-  MULTICHANNEL: 'Ring + SMS',
   SIGNAL: 'Signal',
   WHATSAPP: 'WhatsApp',
   RING: 'Ring call',
@@ -27,7 +26,9 @@ class SMSEagleNotificationForm extends React.Component {
     to_group: '',
     smseagle_type: 'SMS',
     ring_duration: 10,
-    tts_model: 0,
+    tts_voice_id: 0,
+    elevenlabs_voice_id: 0,
+    elevenlabs_direct_voice_id: '',
     elevenlabs_api_key: '',
   };
 
@@ -47,8 +48,10 @@ class SMSEagleNotificationForm extends React.Component {
   render() {
     const { config, validation } = this.props;
     const selectedType = config.smseagle_type || 'SMS';
-    const showRingDuration = ['RING', 'MULTICHANNEL', 'TTS', 'TTS_ADV', 'ELEVENLABS', 'ELEVENLABS_DIRECT'].includes(selectedType);
-    const showTtsModel = ['TTS_ADV', 'ELEVENLABS', 'ELEVENLABS_DIRECT'].includes(selectedType);
+    const showRingDuration = ['RING', 'TTS', 'TTS_ADV', 'ELEVENLABS', 'ELEVENLABS_DIRECT'].includes(selectedType);
+    const showTtsVoiceId = selectedType === 'TTS_ADV';
+    const showElevenlabsVoiceId = selectedType === 'ELEVENLABS';
+    const showElevenlabsDirectVoiceId = selectedType === 'ELEVENLABS_DIRECT';
     const showElevenLabsKey = selectedType === 'ELEVENLABS_DIRECT';
 
     return (
@@ -133,15 +136,39 @@ class SMSEagleNotificationForm extends React.Component {
           />
         )}
 
-        {showTtsModel && (
+        {showTtsVoiceId && (
           <Input
-            id="tts_model"
-            name="tts_model"
-            label="TTS Model ID"
+            id="tts_voice_id"
+            name="tts_voice_id"
+            label="TTS Advanced Voice ID"
             type="number"
             onChange={this.handleChange}
-            value={config.tts_model || 0}
-            help="Voice model ID for TTS_ADV / ElevenLabs."
+            value={config.tts_voice_id || 0}
+            help="Voice ID for Text-to-Speech (Advanced)."
+          />
+        )}
+
+        {showElevenlabsVoiceId && (
+          <Input
+            id="elevenlabs_voice_id"
+            name="elevenlabs_voice_id"
+            label="ElevenLabs Voice ID"
+            type="number"
+            onChange={this.handleChange}
+            value={config.elevenlabs_voice_id || 0}
+            help="Voice ID for ElevenLabs (local)."
+          />
+        )}
+
+        {showElevenlabsDirectVoiceId && (
+          <Input
+            id="elevenlabs_direct_voice_id"
+            name="elevenlabs_direct_voice_id"
+            label="ElevenLabs Direct Voice ID"
+            type="number"
+            onChange={this.handleChange}
+            value={config.elevenlabs_direct_voice_id || ''}
+            help="Voice ID for ElevenLabs (direct call)."
           />
         )}
 

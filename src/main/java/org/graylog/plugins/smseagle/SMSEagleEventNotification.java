@@ -45,7 +45,9 @@ public class SMSEagleEventNotification implements EventNotification {
                     buildMessage(ctx),
                     config.smseagleType(),
                     config.ringDuration(),
-                    config.ttsModel(),
+                    config.ttsVoiceId(),
+                    config.elevenlabsVoiceId(),
+                    config.elevenlabsDirectVoiceId(),
                     config.elevenlabsApiKey()
             );
         } catch (SMSEagleException e) {

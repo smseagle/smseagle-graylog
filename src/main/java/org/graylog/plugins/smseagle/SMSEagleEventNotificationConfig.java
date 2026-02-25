@@ -29,7 +29,9 @@ public abstract class SMSEagleEventNotificationConfig implements EventNotificati
     private static final String FIELD_TO_GROUP = "to_group";
     private static final String FIELD_DATA_TYPE = "smseagle_type";
     private static final String FIELD_RING_DURATION = "ring_duration";
-    private static final String FIELD_TTS_MODEL_ID = "tts_model";
+    private static final String FIELD_TTS_VOICE_ID = "tts_voice_id";
+    private static final String FIELD_ELEVENLABS_VOICE_ID = "elevenlabs_voice_id";
+    private static final String FIELD_ELEVENLABS_DIRECT_VOICE_ID = "elevenlabs_direct_voice_id";
     private static final String FIELD_ELEVENLABS_API_KEY = "elevenlabs_api_key";
 
     @JsonProperty(FIELD_URL)
@@ -56,8 +58,14 @@ public abstract class SMSEagleEventNotificationConfig implements EventNotificati
     @JsonProperty(FIELD_RING_DURATION)
     public abstract int ringDuration();
 
-    @JsonProperty(FIELD_TTS_MODEL_ID)
-    public abstract int ttsModel();
+    @JsonProperty(FIELD_TTS_VOICE_ID)
+    public abstract int ttsVoiceId();
+
+    @JsonProperty(FIELD_ELEVENLABS_VOICE_ID)
+    public abstract int elevenlabsVoiceId();
+
+    @JsonProperty(FIELD_ELEVENLABS_DIRECT_VOICE_ID)
+    public abstract String elevenlabsDirectVoiceId();
 
     @JsonProperty(FIELD_ELEVENLABS_API_KEY)
     @Nullable
@@ -108,7 +116,9 @@ public abstract class SMSEagleEventNotificationConfig implements EventNotificati
                     .type(TYPE_NAME)
                     .smseagleType("SMS")
                     .ringDuration(10)
-                    .ttsModel(0)
+                    .ttsVoiceId(0)
+                    .elevenlabsVoiceId(0)
+                    .elevenlabsDirectVoiceId("")
                     .toNumber("")
                     .toContact("")
                     .toGroup("")
@@ -136,8 +146,14 @@ public abstract class SMSEagleEventNotificationConfig implements EventNotificati
         @JsonProperty(FIELD_RING_DURATION)
         public abstract Builder ringDuration(int ringDuration);
 
-        @JsonProperty(FIELD_TTS_MODEL_ID)
-        public abstract Builder ttsModel(int ttsModel);
+        @JsonProperty(FIELD_TTS_VOICE_ID)
+        public abstract Builder ttsVoiceId(int ttsVoiceId);
+
+        @JsonProperty(FIELD_ELEVENLABS_VOICE_ID)
+        public abstract Builder elevenlabsVoiceId(int elevenlabsVoiceId);
+
+        @JsonProperty(FIELD_ELEVENLABS_DIRECT_VOICE_ID)
+        public abstract Builder elevenlabsDirectVoiceId(String elevenlabsDirectVoiceId);
 
         @JsonProperty(FIELD_ELEVENLABS_API_KEY)
         public abstract Builder elevenlabsApiKey(String elevenlabsApiKey);

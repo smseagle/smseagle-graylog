@@ -5,7 +5,6 @@ import { Table, Button } from 'components/bootstrap';
 const DATA_TYPE_LABELS = {
   SMS: 'SMS',
   FLASHSMS: 'Flash SMS',
-  MULTICHANNEL: 'Ring + SMS',
   SIGNAL: 'Signal',
   WHATSAPP: 'WhatsApp',
   RING: 'Ring call',
